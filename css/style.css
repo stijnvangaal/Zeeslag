@@ -1,0 +1,15 @@
+#Field{
+	float: left; 
+	height: 600px; 
+	width: 600px; 
+	margin: 10px; 
+	background: #FF00FF;
+}
+
+#OpponentField{
+	float: left; 
+	height: 600px; 
+	width: 600px; 
+	margin: 10px; 
+	background: #FF0000;
+}
