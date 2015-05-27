@@ -1,4 +1,4 @@
-#Field{
+#Board{
 	float: left; 
 	height: 600px; 
 	width: 600px; 
@@ -6,10 +6,18 @@
 	background: #FF00FF;
 }
 
-#OpponentField{
+#OpponentBoard{
 	float: left; 
 	height: 600px; 
 	width: 600px; 
 	margin: 10px; 
 	background: #FF0000;
+}
+
+#Square{
+	float: left;
+	height: 58px;
+	width: 58px;
+	border: 1px solid black;
+	background: #FFFFFF;
 }
