@@ -14,10 +14,17 @@
 	background: #FF0000;
 }
 
-#Square{
+.Square{
 	float: left;
 	height: 58px;
 	width: 58px;
 	border: 1px solid black;
 	background: #FFFFFF;
+}
+
+#Ship{
+    width:200px;
+    height:40px;
+    border:1px solid red;
+    float:left;
 }
