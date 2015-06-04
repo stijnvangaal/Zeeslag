@@ -29,11 +29,12 @@ Board.prototype.createMyBoard = function()
 }
 
 Board.prototype.CreateShips = function(){
-    this.myShips.push(new Ship(3, this.myContext));
+    this.myShips.push(new Ship(4, this.myContext));
     this.myShips[0].setPosition(
         [this.myBoard[3][3],
          this.myBoard[4][3],
-         this.myBoard[5][3]
+         this.myBoard[5][3],
+         this.myBoard[6][3]
         ]
     );
     this.myShips[0].drawSelf();
