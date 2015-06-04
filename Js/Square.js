@@ -29,32 +29,4 @@ Square.prototype.draw = function(self)
     this.img_water.onload = function(){
         self.context.drawImage(self.img_water, self.xPos * self.size + 1, self.yPos * self.size + 1, self.size - 2, self.size - 2);
     };
-
-    //$('#Board').append("<div class='Square'></div>");
-    //$('.Square').on('drop', function(evt){
-    //    self.drop(evt);
-    //});
-    //$('.Square').on('dragover', function(evt){
-    //    self.allowDrop(evt);
-    //});
-    //$('.Square').on('dragleave', function(evt){
-    //    self.leaveSquare(evt);
-    //});
-}
-
-Square.prototype.allowDrop = function(ev) {
-    ev.preventDefault();
-    ev.target.style.background = 'red';
-}
-
-Square.prototype.leaveSquare = function(ev) {
-    ev.preventDefault();
-    ev.target.style.background = 'white';
-}
-
-Square.prototype.drop = function(ev) {
-    ev.preventDefault();
-    var data = ev.originalEvent.dataTransfer.getData("text");
-    console.log(data);
-    ev.target.appendChild(document.getElementById(data));
 }
