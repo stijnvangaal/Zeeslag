@@ -11,7 +11,7 @@ function Board(context){
 
 	this.createMyBoard();
     this.CreateShips();
-    setInterval(function(){self.redrawBoard(self)}, 1);
+    setInterval(function(){self.redrawBoard(self)}, 100);
 }
 
 Board.prototype.createMyBoard = function()
@@ -49,8 +49,6 @@ Board.prototype.CreateShips = function(){
     this.myShips.push(new Ship(2,this.context,10, "Images/patrouilleschip.png"));
     this.myShips.push(new Ship(2,this.context,11, "Images/patrouilleschip.png"));
     this.myShips.push(new Ship(2,this.context,12, "Images/patrouilleschip.png"));
-    this.selectedShip = this.myShips[0];
-    this.myShips[0].selected = true;
 }
 
 Board.prototype.redrawBoard = function(self){
@@ -67,24 +65,118 @@ Board.prototype.redrawBoard = function(self){
     }
 }
 
-Board.prototype.clickEvent = function(x,y){
-    x = Math.floor(x/80);
-    y = Math.floor(y/80);
-    for(index in this.selectedSquares){
-        this.selectedSquares[index].switchSelected();
-    }
-    this.selectedSquares = [];
+Board.prototype.clickEventOnField = function(x,y) {
+    x = Math.floor(x / 80);
+    y = Math.floor(y / 80);
 
-    this.myBoard[y][x].switchSelected()
-    this.selectedSquares.push(this.myBoard[y][x]);
-    for(var count = 0; count < this.selectedShip.length; count++) {
-        if(x + count < 10) {
-            this.myBoard[y][x + count].switchSelected();
-            this.selectedSquares.push(this.myBoard[y][x + count]);
-        }
-        if(y + count < 10) {
-            this.myBoard[y + count][x].switchSelected();
-            this.selectedSquares.push(this.myBoard[y + count][x]);
+    //deselect squares
+    if(this.selectedSquares.length != 0) {
+        for (index in this.selectedSquares) {
+            this.selectedSquares[index].switchSelected();
         }
     }
+
+    //check if there is a ship on the square
+    //if so, select it
+    if(this.myBoard[y][x].ship != null){
+        this.selectedShip.switchSelected();
+        this.selectedShip = this.myBoard[y][x].ship;
+        this.selectedShip.switchSelected();
+        this.selectedSquares = [];
+    }
+    else if ($.inArray(this.myBoard[y][x], this.selectedSquares) != -1) {
+        //check if a ship is needed to be set
+        if (x == this.selectedSquares[0].xPos && y == this.selectedSquares[0].yPos) {
+            this.selectedSquares = [];
+        }
+        else {
+            var shipSquares = [];
+            if (x == this.selectedSquares[0].xPos) {
+                //set ship vertical
+                for (var index in this.selectedSquares) {
+                    if (this.selectedSquares[index].xPos == x) {
+                        shipSquares.push(this.selectedSquares[index])
+                    }
+                }
+            }
+            if (y == this.selectedSquares[0].yPos) {
+                //set ship horizontal
+                for (var index in this.selectedSquares) {
+                    if (this.selectedSquares[index].yPos == y) {
+                        shipSquares.push(this.selectedSquares[index])
+                    }
+                }
+            }
+
+            if(this.checkAvailable(shipSquares, this.selectedShip)) {
+                oldPos = this.selectedShip.getPosition();
+                for (var index in oldPos) {
+                    oldPos[index].ship = null;
+                }
+                //place the ship
+                this.selectedShip.setPosition(shipSquares);
+                for (var index in shipSquares) {
+                    shipSquares[index].ship = this.selectedShip;
+                }
+            }
+        }
+        this.selectedSquares = [];
+    }
+    else {
+        //set new squares selection
+        this.selectedSquares = [];
+
+        this.myBoard[y][x].switchSelected()
+        this.selectedSquares.push(this.myBoard[y][x]);
+        for (var count = 1; count < this.selectedShip.length; count++) {
+            if (x + count < 10) {
+                this.myBoard[y][x + count].switchSelected();
+                this.selectedSquares.push(this.myBoard[y][x + count]);
+            }
+            if (y + count < 10) {
+                this.myBoard[y + count][x].switchSelected();
+                this.selectedSquares.push(this.myBoard[y + count][x]);
+            }
+        }
+    }
+}
+
+Board.prototype.clickEventOnMiddle = function(x, y){
+    var height  = this.myShips[0].height;
+    var between = this.myShips[0].between;
+    if(y <= this.myShips.length * (height + between)) {
+        for (var count = 0; count < this.myShips.length; count++) {
+            if (y <= height) {
+                if(this.selectedShip != null) {
+                    this.selectedShip.switchSelected();
+                }
+                this.selectedShip = this.myShips[count];
+                this.selectedShip.switchSelected();
+                break;
+            }
+            else {
+                y -= height;
+                if (y <= between) {
+                    break;
+                }
+                else {
+                    y -= between;
+                }
+            }
+        }
+    }
+}
+
+Board.prototype.checkAvailable = function(squares, ship){
+    for(var index in squares){
+        if(squares[index].ship != null){
+            return false;
+        }
+    }
+
+    if(squares.length == ship.length){
+        return true;
+    }
+
+    return false;
 }

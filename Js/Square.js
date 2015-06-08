@@ -28,21 +28,27 @@ Square.prototype.draw = function()
 {
     var self = this;
     this.context.beginPath();
-    this.context.lineWidth="1";
+    this.context.lineWidth="2";
     this.context.strokeStyle="black";
     this.context.rect(this.xPos * this.size, this.yPos * this.size, this.size, this.size);
     this.context.stroke();
 
+    if(self.selected){
+        self.context.fillStyle = "red";
+        self.context.fillRect(self.xPos * self.size + 1, self.yPos * self.size + 1, self.size - 2, self.size - 2);
+        self.context.globalAlpha = 0.5;
+        self.context.drawImage(self.img_water, self.xPos * self.size + 1, self.yPos * self.size + 1, self.size - 2, self.size - 2);
+        self.context.globalAlpha = 1;
+    }
+    else {
+        self.context.drawImage(self.img_water, self.xPos * self.size + 1, self.yPos * self.size + 1, self.size - 2, self.size - 2);
+    }
 
-        if(self.selected){
-            self.context.fillStyle = "red";
-            self.context.fillRect(self.xPos * self.size + 1, self.yPos * self.size + 1, self.size - 2, self.size - 2);
-            self.context.globalAlpha = 0.5;
-            self.context.drawImage(self.img_water, self.xPos * self.size + 1, self.yPos * self.size + 1, self.size - 2, self.size - 2);
-            self.context.globalAlpha = 1;
-        }
-        else {
-            self.context.drawImage(self.img_water, self.xPos * self.size + 1, self.yPos * self.size + 1, self.size - 2, self.size - 2);
-        }
-
+    if(this.ship != null && this.ship.selected){
+        this.context.beginPath();
+        this.context.lineWidth="2";
+        this.context.strokeStyle="red";
+        this.context.rect((this.xPos * this.size) + 2, (this.yPos * this.size) + 2, this.size - 4, this.size - 4);
+        this.context.stroke();
+    }
 }

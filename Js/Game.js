@@ -10,11 +10,14 @@ function Game(){
 
     this.myCanvas.addEventListener('click', function(event){
         // the canvas is displayed with an extra 10 px on x and y
+        //left is displayed between x = 0 - x = 810 y = 0 - y = 810
         if(event.x <= 810 && event.y <= 810){
-           console.log("on board")
-            self.board.clickEvent(event.x-10, event.y-10);
+            self.board.clickEventOnField(event.x-10, event.y-10);
         }
-        console.log(event.x + " " + event.y);
+        //middle menu is displayed between x = 810 - x = 990 y = 10 y = 810
+        if(event.x > 820 && event.x <= 1000 && event.y <= 810){
+            self.board.clickEventOnMiddle(event.x-10, event.y-10);
+        }
     });
 }
 
