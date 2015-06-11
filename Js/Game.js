@@ -3,7 +3,7 @@
  */
 function Game(data){
     var self = this;
-    this.id = data.id;
+    this.id = data._id;
 
     this.myCanvas = document.createElement('canvas');
     this.myCanvas.id     = "gameBoard";
@@ -13,7 +13,7 @@ function Game(data){
     this.container.appendChild(this.myCanvas);
     this.context = this.myCanvas.getContext('2d');
 
-    this.board = new Board(this.context, data.myGameboard, data.status, data.yourTurn);
+    this.board = new Board(this.context, this.id, data.myGameboard, data.status, data.yourTurn);
 
     this.myCanvas.addEventListener('click', function(event){
         // the canvas is displayed with an extra 10 px on x and y

@@ -1,8 +1,9 @@
 /**
  * Created by stijn on 27-5-2015.
  */
-function Board(context, gameBoard, status, myTurn){
+function Board(context, gameId, gameBoard, status, myTurn){
     var self = this;
+    this.gameId = gameId;
     this.myBoard;
     this.enemyBoard;
     this.myShips            = [];
@@ -22,7 +23,7 @@ function Board(context, gameBoard, status, myTurn){
 
     this.allShipsPlaced     = this.checkAllShipsPlaced();
 
-    requestAnimationFrame(function(){self.redrawBoard(self)});
+    setInterval(function(){self.redrawBoard(self)}, 100);
 }
 
 Board.prototype.createMyBoard = function()
@@ -51,7 +52,20 @@ Board.prototype.CreateShips = function(gameBoard){
     else{
         ships = gameBoard.ships;
         for(index in ships){
-            this.myShips.push(new Ship(ships[index].length, this.context, index, ships[index].name, ships[index].isVertical, ships[index].startCell, ships[index].hits));
+            var squares = [];
+            var x = this.fromCharToInt(ships[index].startCell.x);
+            var y = ships[index].startCell.y - 1;
+            if(ships[index].isVertical){
+                for(var count = 0; count < ships[index].length; count++,y++){
+                    squares.push(this.myBoard[y][x]);
+                }
+            }
+            else{
+                for(var count = 0; count < ships[index].length; count++, x++){
+                    squares.push(this.myBoard[y][x]);
+                }
+            }
+            this.myShips.push(new Ship(ships[index].length, this.context, index, ships[index].name, ships[index].isVertical, squares, ships[index].hits));
         }
     }
 }
@@ -89,7 +103,7 @@ Board.prototype.redrawBoard = function(self){
         }
     }
     this.drawMenu();
-    requestAnimationFrame(function(){self.redrawBoard(self)});
+    //requestAnimationFrame(function(){self.redrawBoard(self)});
 }
 
 Board.prototype.drawMenu = function(){
@@ -290,8 +304,24 @@ Board.prototype.doPlaceShips = function(){
     //get the normal ships as json object and fill it in with the needed variables
     var ships = getShips();
     for(var index in this.myShips){
-        ships[index].startCell = {'x': String.fromCharCode(97 + this.myShips[index].squares[0].xPos), 'y': this.myShips[index].squares[0].yPos};
+        ships[index].startCell = {'x': String.fromCharCode(97 + this.myShips[index].squares[0].xPos), 'y': this.myShips[index].squares[0].yPos + 1};
         ships[index].isVertical = this.myShips[index].isVertical;
     }
+    var allShips = {ships : ships};
+    sentGameBoard(allShips, this.gameId);
+}
 
+Board.prototype.fromCharToInt = function(char){
+    switch (char){
+        case 'a' : return 0;
+        case 'b' : return 1;
+        case 'c' : return 2;
+        case 'd' : return 3;
+        case 'e' : return 4;
+        case 'f' : return 5;
+        case 'g' : return 6;
+        case 'h' : return 7;
+        case 'i' : return 8;
+        case 'j' : return 9;
+    }
 }

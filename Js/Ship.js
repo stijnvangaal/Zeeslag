@@ -1,15 +1,16 @@
 /**
  * Created by stijn on 27-5-2015.
  */
-function Ship(length, context, shipNr, name, isVertical, startCell, hits){
+function Ship(length, context, shipNr, name, isVertical, squares, hits){
     var self = this;
     this.name       = name;
     this.shipNumber = shipNr;
     this.length     = length;
     this.context    = context;
-    this.squares    = null;
+    this.squares    = squares;
     this.selected   = false;
-    this.isVertical = false;
+    this.isVertical = isVertical;
+    this.hits       = hits;
 
     //animation variables
     this.xPos       = 0;

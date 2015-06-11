@@ -16,9 +16,7 @@ gameMenu.innerHTML  = "<div class='MenuButton' onclick='deleteGame()'><p>Back to
 
 function openGame(id){
     $.get(basicUrl + 'games/' + id + token, function(data){
-        if(data.myGameboard == null){
-            game = new Game(data);
-        }
+        game = new Game(data);
     });
     toggleMenu(true);
 }
@@ -35,7 +33,7 @@ function requestGamePlayer(){
 
 function requestGameAI(){
     $.get(basicUrl + 'games/AI' + token, function(data){
-        console.log(data);
+        return data;
     });
     getGames();
 }
@@ -50,7 +48,10 @@ function getShips(){
     return ships;
 }
 
-function sentGameBoard(ships){
+function sentGameBoard(ships, id){
+    $.post(basicUrl + 'games/' + id + '/gameboards' + token, ships, function(result){
+        return result;
+    });
 }
 
 function getGames(){
