@@ -14,14 +14,8 @@ var gameMenu    = document.createElement('div');
 gameMenu.id     = 'GameMenuContainer';
 gameMenu.innerHTML  = "<div class='MenuButton' onclick='deleteGame()'><p>Back to Menu</p></div>";
 
-$.get(basicUrl + 'ships' + token, function(data) {
-
-    //console.log(data);
-});
-
 function openGame(id){
     $.get(basicUrl + 'games/' + id + token, function(data){
-        console.log(data);
         if(data.myGameboard == null){
             game = new Game(data);
         }
@@ -54,6 +48,9 @@ function prepareShips(){
 
 function getShips(){
     return ships;
+}
+
+function sentGameBoard(ships){
 }
 
 function getGames(){

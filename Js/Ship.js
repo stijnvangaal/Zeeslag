@@ -9,6 +9,7 @@ function Ship(length, context, shipNr, name, isVertical, startCell, hits){
     this.context    = context;
     this.squares    = null;
     this.selected   = false;
+    this.isVertical = false;
 
     //animation variables
     this.xPos       = 0;
@@ -57,6 +58,8 @@ Ship.prototype.setPosition = function(squares){
     }
     this.squares = squares;
 
+    this.isVertical = this.checkVertical();
+
     this.targetX = this.squares[0].xPos * this.squares[0].size;
     this.targetY = this.squares[0].yPos * this.squares[0].size;
 
@@ -65,6 +68,15 @@ Ship.prototype.setPosition = function(squares){
 
     //calculate the raduis for the image
     this.rotation = Math.atan2(this.yPos - this.targetY, this.xPos - this.targetX);
+}
+
+Ship.prototype.checkVertical = function(){
+    if(this.squares[0].yPos == this.squares[1].yPos){
+        return false;
+    }
+    else{
+        return true;
+    }
 }
 
 Ship.prototype.getPosition = function(){

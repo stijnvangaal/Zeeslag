@@ -287,6 +287,11 @@ Board.prototype.checkAvailable = function(squares, ship){
 
 
 Board.prototype.doPlaceShips = function(){
-    var shipList = [];
+    //get the normal ships as json object and fill it in with the needed variables
+    var ships = getShips();
+    for(var index in this.myShips){
+        ships[index].startCell = {'x': String.fromCharCode(97 + this.myShips[index].squares[0].xPos), 'y': this.myShips[index].squares[0].yPos};
+        ships[index].isVertical = this.myShips[index].isVertical;
+    }
 
 }
