@@ -1,13 +1,24 @@
 /**
  * Created by stijn on 27-5-2015.
  */
-function Ship(length, context, shipNr, fullImage){
+function Ship(length, context, shipNr, name, isVertical, startCell, hits){
     var self = this;
+    this.name       = name;
     this.shipNumber = shipNr;
-    this.length = length;
-    this.context = context;
-    this.squares = null;
-    this.selected = false;
+    this.length     = length;
+    this.context    = context;
+    this.squares    = null;
+    this.selected   = false;
+
+    //animation variables
+    this.xPos       = 0;
+    this.yPos       = 0;
+    this.animating  = false;
+    this.targetX    = 0;
+    this.targetY    = 0;
+    this.speedX     = 0;
+    this.speedY     = 0;
+    this.rotation   = 0;
 
     this.height  = 36;
     this.width   = 180;
@@ -17,18 +28,43 @@ function Ship(length, context, shipNr, fullImage){
     this.img_ship_middle        = new Image();
     this.img_ship_back          = new Image();
     this.img_ship_full          = new Image();
-    this.img_ship_front.src     = "Images/front.png";
-    this.img_ship_middle.src    = "Images/middle.png";
-    this.img_ship_back.src      = "Images/back.png";
-    this.img_ship_full.src      = fullImage;
+
+    if(name == "Submarine") {
+        this.img_ship_front.src     = "Images/front-U.png";
+        this.img_ship_middle.src    = "Images/middle-U.png";
+        this.img_ship_back.src      = "Images/back-U.png";
+    }
+    else{
+        this.img_ship_front.src     = "Images/front.png";
+        this.img_ship_middle.src    = "Images/middle.png";
+        this.img_ship_back.src      = "Images/back.png";
+    }
+    this.img_ship_full.src          = "Images/" + name + ".png";
 
     this.draw();
 }
 
 
 Ship.prototype.setPosition = function(squares){
-
+    this.animating = true;
+    if(this.squares == null){
+        this.xPos = 810;
+        this.yPos = this.shipNumber * (this.height + this.between);
+    }
+    else{
+        this.xPos = this.squares[0].xPos * this.squares[0].size;
+        this.yPos = this.squares[0].yPos * this.squares[0].size;
+    }
     this.squares = squares;
+
+    this.targetX = this.squares[0].xPos * this.squares[0].size;
+    this.targetY = this.squares[0].yPos * this.squares[0].size;
+
+    this.speedX = (this.targetX - this.xPos)/100;
+    this.speedY = (this.targetY - this.yPos)/100;
+
+    //calculate the raduis for the image
+    this.rotation = Math.atan2(this.yPos - this.targetY, this.xPos - this.targetX);
 }
 
 Ship.prototype.getPosition = function(){
@@ -53,19 +89,81 @@ Ship.prototype.draw = function(){
         this.context.rect(minX, self.shipNumber * (self.height + self.between), self.width, self.height);
         this.context.stroke();
 
-        self.context.drawImage(self.img_ship_full, minX, self.shipNumber * (self.height + self.between));
+        this.context.drawImage(self.img_ship_full, minX, self.shipNumber * (self.height + self.between));
     }
     else {
-        //draw ship inside of field
-        for (var count = 0; count < this.squares.length; count++) {
-            if (count == 0) {
-                self.doDrawSides(count, self.img_ship_front);
+        if(this.animating){
+
+            if(this.targetX != null) {
+                if (this.speedX < 0) {
+                    if (this.targetX < this.xPos) {
+                        this.xPos += this.speedX;
+                    }
+                }
+                else {
+                    if (this.targetX > this.xPos) {
+                        this.xPos += this.speedX;
+                    }
+                }
             }
-            else if (count == this.squares.length - 1) {
-                self.doDrawSides(count, self.img_ship_back);
+            if(this.targetY != null) {
+                if (this.speedY < 0) {
+                    if (this.targetY < this.yPos) {
+                        this.yPos += this.speedY;
+                    }
+                }
+                else {
+                    if (this.targetY > this.yPos) {
+                        this.yPos += this.speedY;
+                    }
+                }
             }
-            else {
-                self.doDrawMiddle();
+
+            this.context.save();
+            //add a bit to the position because of the image size
+            this.context.translate(this.xPos + (36 * (this.length * 0.5)), this.yPos + 18);
+            this.context.rotate(this.rotation);
+            this.context.drawImage(self.img_ship_full, 0, 0);
+            this.context.restore();
+
+            if(this.speedX < 0){
+                if(this.targetX >= this.xPos){
+                    this.targetX = null;
+                }
+            }
+            else{
+                if(this.targetX <= this.xPos){
+                    this.targetX = null;
+                }
+            }
+
+            if(this.speedY < 0){
+                if(this.targetY >= this.yPos){
+                    this.targetY = null;
+                }
+            }
+            else{
+                if(this.targetY <= this.yPos){
+                    this.targetY = null;
+                }
+            }
+
+            if(this.targetX == null && this.targetY == null){
+                this.animating = false;
+            }
+        }
+        else {
+            //draw ship inside of field
+            for (var count = 0; count < this.squares.length; count++) {
+                if (count == 0) {
+                    self.doDrawSides(count, self.img_ship_front);
+                }
+                else if (count == this.squares.length - 1) {
+                    self.doDrawSides(count, self.img_ship_back);
+                }
+                else {
+                    self.doDrawMiddle();
+                }
             }
         }
     }

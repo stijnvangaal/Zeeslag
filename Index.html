@@ -6,34 +6,24 @@
     <title>Zeeslag</title>
 </head>
 <body>
+<div id="GameContent">
+    <div id="canvasContainer"></div>
+    <div id="menuContainer">
+        <div class="MenuButton" onclick="createGame()"><p>New game : player</p></div>
+        <div class="MenuButton" onclick="requestGameAI()"><p>New game : AI</p></div>
+        <div id="gameList">
+            <ul id="myGames"></ul>
+        </div>
+    </div>
+</div>
 
-<!--
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.Im1tYW1odmVyQGF2YW5zLm5sIg.mJdVEDMIIBweop80Bo6yJT1b0MJiz8wYe-2MKq6vXuU
--->
-
-<canvas id="gameBoard" height="800" width="1800">
-
-
-</canvas>
-
-
-<!--<div id="Game">-->
-	<!--<div id="Board">-->
-
-	<!--</div>-->
-
-	<!--<div id="OpponentBoard">-->
-
-	<!--</div>-->
-
-	<!--<div id="Menu">-->
-
-	<!--</div>-->
-<!--</div>-->
 
 <script src="Js/jquery-1.11.1.min.js"></script>
+<script src="https://zeeslagavans.herokuapp.com/socket.io/socket.io.js"></script>
+<script src="Js/Handler.js"></script>
 <script src="Js/Ship.js"></script>
 <script src="Js/Square.js"></script>
+<script src="Js/EnemySqaure.js"></script>
 <script src="Js/Board.js"></script>
 <script src="Js/Game.js"></script>
 </body>

@@ -1,12 +1,19 @@
 /**
  * Created by stijn on 27-5-2015.
  */
-function Game(){
+function Game(data){
     var self = this;
+    this.id = data.id;
 
-    this.myCanvas = document.querySelector('#gameBoard');
+    this.myCanvas = document.createElement('canvas');
+    this.myCanvas.id     = "gameBoard";
+    this.myCanvas.width  = 1800;
+    this.myCanvas.height = 800;
+    this.container = document.querySelector('#canvasContainer');
+    this.container.appendChild(this.myCanvas);
     this.context = this.myCanvas.getContext('2d');
-    this.board = new Board(this.context);
+
+    this.board = new Board(this.context, data.myGameboard, data.status, data.yourTurn);
 
     this.myCanvas.addEventListener('click', function(event){
         // the canvas is displayed with an extra 10 px on x and y
@@ -19,8 +26,13 @@ function Game(){
             self.board.clickEventOnMiddle(event.x-10, event.y-10);
         }
     });
+
+    this.myCanvas.addEventListener('mousemove', function(event){
+        self.board.mouseMove(event.clientX, event.clientY);
+    })
 }
 
-
-
-var game = new Game();
+Game.prototype.destroy = function(){
+    this.myCanvas.remove();
+    this.board = null;
+}
