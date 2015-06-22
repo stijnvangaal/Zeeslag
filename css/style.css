@@ -64,10 +64,14 @@ body{
     user-select: none;
 }
 
+.DeleteButton{
+    margin-left:45px;
+}
+
 #gameList{
     height:550px;
-    width:400px;
-    margin-left:-150px;
+    width:800px;
+    margin-left:-350px;
     overflow: auto;
 }
 

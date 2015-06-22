@@ -9,13 +9,20 @@
 <div id="GameContent">
     <div id="canvasContainer"></div>
     <div id="menuContainer">
-        <div class="MenuButton" onclick="createGame()"><p>New game : player</p></div>
+        <div class="MenuButton" onclick="requestGamePlayer()"><p>New game : player</p></div>
         <div class="MenuButton" onclick="requestGameAI()"><p>New game : AI</p></div>
         <div id="gameList">
             <ul id="myGames"></ul>
         </div>
     </div>
 </div>
+
+<audio class="sound_explosion"><source src="audio/explosion1.wav"/></audio>
+<audio class="sound_explosion"><source src="audio/explosion2.wav"/></audio>
+<audio class="sound_explosion"><source src="audio/explosion4.wav"/></audio>
+<audio class="sound_splash"><source src="audio/splash1.wav"/></audio>
+<audio class="sound_splash"><source src="audio/splash2.wav"/></audio>
+<audio class="sound_splash"><source src="audio/splash3.wav"/></audio>
 
 
 <script src="Js/jquery-1.11.1.min.js"></script>

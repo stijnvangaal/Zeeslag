@@ -13,7 +13,7 @@ function Game(data){
     this.container.appendChild(this.myCanvas);
     this.context = this.myCanvas.getContext('2d');
 
-    this.board = new Board(this.context, this.id, data.myGameboard, data.status, data.yourTurn);
+    this.board = new Board(this.context, this.id, data.myGameboard, data.enemyGameboard, data.status, data.yourTurn, data.youWon);
 
     this.myCanvas.addEventListener('click', function(event){
         // the canvas is displayed with an extra 10 px on x and y
@@ -24,6 +24,10 @@ function Game(data){
         //middle menu is displayed between x = 810 - x = 990 y = 10 y = 810
         if(event.x > 820 && event.x <= 1000 && event.y <= 810){
             self.board.clickEventOnMiddle(event.x-10, event.y-10);
+        }
+        //right field is displayed between x = 1000 - x = 1800 y = 10 y = 810
+        if(event.x > 1010 && event.x <= 1810 && event.y <= 810){
+            self.board.clickEventOnEnemy(event.x-10, event.y-10);
         }
     });
 

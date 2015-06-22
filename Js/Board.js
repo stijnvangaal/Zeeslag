@@ -1,7 +1,7 @@
 /**
  * Created by stijn on 27-5-2015.
  */
-function Board(context, gameId, gameBoard, status, myTurn){
+function Board(context, gameId, gameBoard, enemyBoard, status, myTurn, win){
     var self = this;
     this.gameId = gameId;
     this.myBoard;
@@ -10,23 +10,26 @@ function Board(context, gameId, gameBoard, status, myTurn){
     this.context            = context;
     this.selectedShip       = null;
     this.selectedSquares    = [];
+    this.selectedEnemy      = null;
+    this.waiting            = false;
 
     this.mouseX             = 0;
     this.mouseY             = 0;
 
     this.status             = status;
     this.myTurn             = myTurn;
+    this.iWin               = win;
 
-	this.createMyBoard();
+	this.createMyBoard(gameBoard);
     this.CreateShips(gameBoard);
-    this.createEnemyBoard();
+    this.createEnemyBoard(enemyBoard);
 
     this.allShipsPlaced     = this.checkAllShipsPlaced();
 
-    setInterval(function(){self.redrawBoard(self)}, 100);
+     this.interval = setInterval(function(){self.redrawBoard(self)}, 66);
 }
 
-Board.prototype.createMyBoard = function()
+Board.prototype.createMyBoard = function(gameBoard)
 {
 
 	this.myBoard = [];
@@ -39,6 +42,21 @@ Board.prototype.createMyBoard = function()
 			this.myBoard[y][x] = new Square(this.context, x, y);
 		}
 	}
+
+    if(gameBoard != null){
+        for (var index in gameBoard['shots']) {
+
+            var x = this.fromCharToInt(gameBoard['shots'][index].x);
+            var y = gameBoard['shots'][index].y - 1;
+            if (gameBoard['shots'][index].isHit) {
+                this.myBoard[y][x].shot = 'BOOM';
+            }
+            else {
+                this.myBoard[y][x].shot = 'SPLASH';
+            }
+        }
+    }
+
 }
 
 Board.prototype.CreateShips = function(gameBoard){
@@ -70,7 +88,7 @@ Board.prototype.CreateShips = function(gameBoard){
     }
 }
 
-Board.prototype.createEnemyBoard = function(){
+Board.prototype.createEnemyBoard = function(enemyBoard){
     this.enemyBoard = [];
 
     for(var y = 0; y < 10; y++)
@@ -79,6 +97,19 @@ Board.prototype.createEnemyBoard = function(){
         for(var x = 0; x < 10; x++)
         {
             this.enemyBoard[y][x] = new EnemySquare(this.context, x, y);
+        }
+    }
+
+    if(enemyBoard != null) {
+        for (var index in enemyBoard['shots']) {
+            var x = this.fromCharToInt(enemyBoard['shots'][index].x);
+            var y = enemyBoard['shots'][index].y - 1;
+            if (enemyBoard['shots'][index].isHit) {
+                this.enemyBoard[y][x].shot = 'BOOM';
+            }
+            else {
+                this.enemyBoard[y][x].shot = 'SPLASH';
+            }
         }
     }
 }
@@ -140,11 +171,60 @@ Board.prototype.drawMenu = function(){
             this.context.fillStyle = 'black';
         }
     }
+    if(this.status == 'started'){
+        var message = 'Fire';
+        if(this.selectedEnemy == null || !this.myTurn){
+            this.context.fillStyle = 'black';
+        }
+    }
+    if(this.status == 'done'){
+        var message = "done";
+        this.context.fillStyle = 'black';
+    }
 
     this.context.font = '18pt Calibri';
 
     this.context.fillText(message, rectX+(rectWidth/10), rectY+(rectHeight/2));
 
+    if(this.status == "started") {
+        this.context.fillStyle = 'black';
+        this.context.font = '18pt Calibri';
+        if (this.myTurn) {
+            this.context.fillText("It's", 880, 500);
+            this.context.fillStyle = 'red';
+            this.context.font = 'bold 20pt Calibri';
+            this.context.fillText("your", 870, 522);
+            this.context.fillStyle = 'black';
+            this.context.font = 'normal 20pt Calibri';
+            this.context.fillText("turn", 875, 546);
+        }
+        else {
+            this.context.fillText("It's", 880, 500);
+            this.context.fillStyle = 'red';
+            this.context.font = 'bold 20pt Calibri';
+            this.context.fillText("the opponent's", 820, 522);
+            this.context.fillStyle = 'black';
+            this.context.font = 'normal 20pt Calibri';
+            this.context.fillText("turn", 875, 546);
+        }
+    }
+    if(this.status == "setup"){
+        this.context.fillStyle = 'red';
+        this.context.font = 'bold 20pt Calibri';
+        this.context.fillText("Setup", 870, 522);
+    }
+    if(this.status == "done"){
+        this.context.fillStyle = 'red';
+        this.context.font = 'bold 20pt Calibri';
+        if(this.iWin != null) {
+            if(this.iWin) {
+                this.context.fillText("You have won!", 820, 522);
+            }
+            else{
+                this.context.fillText("The opponent won!", 820, 522);
+            }
+        }
+    }
 }
 
 
@@ -163,75 +243,77 @@ Board.prototype.clickEventOnField = function(x,y) {
     x = Math.floor(x / 80);
     y = Math.floor(y / 80);
 
-    //deselect squares
-    if(this.selectedSquares.length != 0) {
-        for (index in this.selectedSquares) {
-            this.selectedSquares[index].switchSelected();
+    if(this.status == 'setup') {
+        //deselect squares
+        if (this.selectedSquares.length != 0) {
+            for (index in this.selectedSquares) {
+                this.selectedSquares[index].switchSelected();
+            }
         }
-    }
 
-    //check if there is a ship on the square
-    //if so, select it
-    if(this.myBoard[y][x].ship != null){
-        this.selectedShip.switchSelected();
-        this.selectedShip = this.myBoard[y][x].ship;
-        this.selectedShip.switchSelected();
-        this.selectedSquares = [];
-    }
-    else if ($.inArray(this.myBoard[y][x], this.selectedSquares) != -1) {
-        //check if a ship is needed to be set
-        if (x == this.selectedSquares[0].xPos && y == this.selectedSquares[0].yPos) {
+        //check if there is a ship on the square
+        //if so, select it
+        if (this.myBoard[y][x].ship != null) {
+            this.selectedShip.switchSelected();
+            this.selectedShip = this.myBoard[y][x].ship;
+            this.selectedShip.switchSelected();
+            this.selectedSquares = [];
+        }
+        else if ($.inArray(this.myBoard[y][x], this.selectedSquares) != -1) {
+            //check if a ship is needed to be set
+            if (x == this.selectedSquares[0].xPos && y == this.selectedSquares[0].yPos) {
+                this.selectedSquares = [];
+            }
+            else {
+                var shipSquares = [];
+                if (x == this.selectedSquares[0].xPos) {
+                    //set ship vertical
+                    for (var index in this.selectedSquares) {
+                        if (this.selectedSquares[index].xPos == x) {
+                            shipSquares.push(this.selectedSquares[index])
+                        }
+                    }
+                }
+                if (y == this.selectedSquares[0].yPos) {
+                    //set ship horizontal
+                    for (var index in this.selectedSquares) {
+                        if (this.selectedSquares[index].yPos == y) {
+                            shipSquares.push(this.selectedSquares[index])
+                        }
+                    }
+                }
+
+                if (this.checkAvailable(shipSquares, this.selectedShip)) {
+                    oldPos = this.selectedShip.getPosition();
+                    for (var index in oldPos) {
+                        oldPos[index].ship = null;
+                    }
+                    //place the ship
+                    this.selectedShip.setPosition(shipSquares);
+                    for (var index in shipSquares) {
+                        shipSquares[index].ship = this.selectedShip;
+                        this.allShipsPlaced = this.checkAllShipsPlaced();
+                    }
+                }
+            }
             this.selectedSquares = [];
         }
         else {
-            var shipSquares = [];
-            if (x == this.selectedSquares[0].xPos) {
-                //set ship vertical
-                for (var index in this.selectedSquares) {
-                    if (this.selectedSquares[index].xPos == x) {
-                        shipSquares.push(this.selectedSquares[index])
-                    }
-                }
-            }
-            if (y == this.selectedSquares[0].yPos) {
-                //set ship horizontal
-                for (var index in this.selectedSquares) {
-                    if (this.selectedSquares[index].yPos == y) {
-                        shipSquares.push(this.selectedSquares[index])
-                    }
-                }
-            }
+            //set new squares selection
+            if (this.selectedShip != null) {
+                this.selectedSquares = [];
 
-            if(this.checkAvailable(shipSquares, this.selectedShip)) {
-                oldPos = this.selectedShip.getPosition();
-                for (var index in oldPos) {
-                    oldPos[index].ship = null;
-                }
-                //place the ship
-                this.selectedShip.setPosition(shipSquares);
-                for (var index in shipSquares) {
-                    shipSquares[index].ship = this.selectedShip;
-                    this.allShipsPlaced = this.checkAllShipsPlaced();
-                }
-            }
-        }
-        this.selectedSquares = [];
-    }
-    else {
-        //set new squares selection
-        if(this.selectedShip != null) {
-            this.selectedSquares = [];
-
-            this.myBoard[y][x].switchSelected()
-            this.selectedSquares.push(this.myBoard[y][x]);
-            for (var count = 1; count < this.selectedShip.length; count++) {
-                if (x + count < 10) {
-                    this.myBoard[y][x + count].switchSelected();
-                    this.selectedSquares.push(this.myBoard[y][x + count]);
-                }
-                if (y + count < 10) {
-                    this.myBoard[y + count][x].switchSelected();
-                    this.selectedSquares.push(this.myBoard[y + count][x]);
+                this.myBoard[y][x].switchSelected()
+                this.selectedSquares.push(this.myBoard[y][x]);
+                for (var count = 1; count < this.selectedShip.length; count++) {
+                    if (x + count < 10) {
+                        this.myBoard[y][x + count].switchSelected();
+                        this.selectedSquares.push(this.myBoard[y][x + count]);
+                    }
+                    if (y + count < 10) {
+                        this.myBoard[y + count][x].switchSelected();
+                        this.selectedSquares.push(this.myBoard[y + count][x]);
+                    }
                 }
             }
         }
@@ -244,6 +326,11 @@ Board.prototype.clickEventOnMiddle = function(x, y){
         if(this.status == 'setup') {
             if(this.allShipsPlaced){
                 this.doPlaceShips();
+            }
+        }
+        if(this.status == 'started') {
+            if(this.selectedEnemy != null){
+                this.fireShot();
             }
         }
     }
@@ -277,12 +364,59 @@ Board.prototype.clickEventOnMiddle = function(x, y){
 }
 
 Board.prototype.clickEventOnEnemy = function(x, y){
+    x = Math.floor((x - 1000) / 80);
+    y = Math.floor(y / 80);
 
+    if(!this.waiting) {
+        if (this.selectedEnemy != null) {
+            this.selectedEnemy.selected = false;
+        }
+        if (this.enemyBoard[y][x].checkFire()) {
+            this.selectedEnemy = this.enemyBoard[y][x];
+            this.selectedEnemy.selected = true;
+        }
+    }
 }
 
 Board.prototype.mouseMove = function(x, y){
     this.mouseX = x;
     this.mouseY = y;
+}
+
+Board.prototype.update = function(data){
+    //ata.myGameboard, data.enemyGameboard, data.status, data.yourTurn
+    //loop trough all my shots
+    if(data.myGameboard != null){
+        for (var index in data.myGameboard['shots']) {
+
+            var x = this.fromCharToInt(data.myGameboard['shots'][index].x);
+            var y = data.myGameboard['shots'][index].y - 1;
+            if (data.myGameboard['shots'][index].isHit) {
+                this.myBoard[y][x].getShot('BOOM');
+            }
+            else {
+                this.myBoard[y][x].getShot('SPLASH');
+            }
+        }
+    }
+
+    //loop trough all enemy shots
+    if(data.enemyGameboard != null) {
+        for (var index in data.enemyGameboard['shots']) {
+            var x = this.fromCharToInt(data.enemyGameboard['shots'][index].x);
+            var y = data.enemyGameboard['shots'][index].y - 1;
+            if (data.enemyGameboard['shots'][index].isHit) {
+                this.enemyBoard[y][x].shot = 'BOOM';
+            }
+            else {
+                this.enemyBoard[y][x].shot = 'SPLASH';
+            }
+        }
+    }
+    //set all variables
+    this.status = data.status;
+    this.myTurn = data.yourTurn;
+    this.iWin   = data.youWon
 }
 
 Board.prototype.checkAvailable = function(squares, ship){
@@ -309,6 +443,39 @@ Board.prototype.doPlaceShips = function(){
     }
     var allShips = {ships : ships};
     sentGameBoard(allShips, this.gameId);
+}
+
+Board.prototype.getShipsPlaced = function(result){
+    console.log(result.msg);
+    if(result.msg == "success") {
+        //deselect squares
+        if (this.selectedSquares.length != 0) {
+            for (index in this.selectedSquares) {
+                this.selectedSquares[index].switchSelected();
+            }
+        }
+        this.selectedShip.selected = false;
+        this.selectedShip = null;
+        console.log("deselect n stuff");
+        this.selectedSquares = [];
+        updateGame(this.gameId);
+    }
+}
+
+Board.prototype.fireShot = function(){
+    this.waiting = true;
+    var shot = {'x' : String.fromCharCode(97 + this.selectedEnemy.xPos), 'y' : this.selectedEnemy.yPos + 1};
+    sentOwnShot(shot, this.gameId);
+}
+
+Board.prototype.getOwnShot = function(result){
+    if(result != 'FAIL'){
+        this.selectedEnemy.getShot(result);
+        this.selectedEnemy.selected = false;
+        this.selectedEnemy = null;
+    }
+    this.waiting = false;
+    updateGame(this.gameId);
 }
 
 Board.prototype.fromCharToInt = function(char){
